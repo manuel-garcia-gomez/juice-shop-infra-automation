@@ -1,75 +1,73 @@
-### The versions used in the project
-providers 
-- hashicorp/aws = 5.3
+# 🏗️ DevSecOps Infrastructure Automation
 
-modules
-- terraform-aws-modules/ec2-instance/aws = 5.2.1
-- terraform-aws-modules/vpc/aws = 5.1.0
+## 📖 Project Overview
+This repository contains the Infrastructure as Code (IaC) and GitOps pipeline configurations for provisioning and managing the AWS infrastructure supporting the [OWASP Juice Shop DevSecOps Project](https://github.com/manuel-garcia-gomez/juice-shop-devsecops).
 
-</br>
+All infrastructure is provisioned declaratively using **Terraform** and deployed via an automated **GitLab CI/CD** pipeline featuring built-in IaC security scanning (**Trivy**) and remote state storage (**AWS S3**).
 
-### Following resources are created with this TF script
-- role "app-server-role" with policies:
-    - AmazonSSMManagedInstanceCore
-    - AmazonEC2ContainerRegistryFullAccess
-- role "gitlab-runner-role" with policies:
-    - AmazonSSMFullAccess
-    - AmazonEC2ContainerRegistryFullAccess
-- vpc "main"
-- security group "main"
-- security group "app-server"
-- ec2 server "ec2_app_server" with:
-    - Role: app-server-role
-    - Security Group: app-server
-- ec2 server "ec2_gitlab_runner"
-    - Role: gitlab-runner-role
-    - Security Group: main
+## 🛠️ Versions & Dependencies
+* **AWS Provider:** `hashicorp/aws` (~> 5.3)
+* **EC2 Module:** `terraform-aws-modules/ec2-instance/aws` (5.2.1)
+* **VPC Module:** `terraform-aws-modules/vpc/aws` (5.1.0)
 
-NOTE: both servers are using the Ubuntu image: ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-*
+## 🚀 Provisioned AWS Resources
+* **IAM Roles & Policies:**
+  * `app-server-role`: `AmazonSSMManagedInstanceCore`, `AmazonEC2ContainerRegistryFullAccess`
+  * `gitlab-runner-role`: `AmazonSSMFullAccess`, `AmazonEC2ContainerRegistryFullAccess`
+* **Networking & Firewall:**
+  * VPC: `main`
+  * Security Groups: `main`, `app-server`
+* **Compute Instances (Ubuntu 22.04 LTS):**
+  * `ec2_app_server`: Application host (`app-server-role`, `app-server` SG)
+  * `ec2_gitlab_runner`: Self-managed CI runner (`gitlab-runner-role`, `main` SG)
 
-</br>
+## 🔄 GitOps Pipeline Architecture
+The infrastructure lifecycle is managed via a dedicated GitLab CI/CD pipeline:
 
-### Create *terraform.tfvars* file and set following variables inside before running the script
-- aws_access_key_id
-- aws_secret_access_key
-- aws_region
-- env_prefix
-- runner_registration_token
+* [**GitOps Pipeline & Security Implementation**](https://github.com/manuel-garcia-gomez/juice-shop-infra-automation/pull/1)
+  * **Remote State:** Centralized state file storage and lock protection using **AWS S3**.
+  * **Validation & Security:** Automated `terraform validate`, plan artifact generation, and **Trivy** static security scanning.
+  * **Automated Provisioning:** Pipeline-driven `terraform apply` using validated plan artifacts.
 
-NOTEs: 
-- *variables.tf* vs *terraform.tfvars*
+## ⚙️ Configuration & Execution
 
-*variables.tf* declares all variables used in script and is normal part of tf script. While *terraform.tfvars* assigns values to those declared variables including secret variables, so it should be created and used locally, not commited to the repo as part of code.
+### 1. Variables Setup (`terraform.tfvars`)
+Create a local `terraform.tfvars` file for manual testing (never commit this file to Git):
 
-- Format inside terraform.tfvars:
-```console
-    my_var_one="value-one" 
-    my_var_two="value-two"
+```hcl
+aws_access_key_id         = "your-aws-access-key"
+aws_secret_access_key     = "your-aws-secret-key"
+aws_region                = "us-east-1"
+env_prefix                = "dev"
+runner_registration_token = "your-gitlab-runner-token"
 ```
-</br>
 
-### Terraform commands to execute the script
+*Note: `variables.tf` declares variables for the codebase, while `terraform.tfvars` assigns local/secret values.*
 
-```console
-# initialise project & download providers
-terraform init 
+### 2. Terraform CLI Commands
+```bash
+# Initialize project and download providers
+terraform init
 
-# preview what will be created with apply & see if any errors
-terraform plan
+# Preview infrastructure changes
+terraform plan -var-file=terraform.tfvars
 
-# exeucute with preview
-terraform apply -var-file terraform.tfvars
+# Apply changes with confirmation
+terraform apply -var-file=terraform.tfvars
 
-# execute without preview
-terraform apply -var-file terraform.tfvars -auto-approve
+# Apply changes without confirmation
+terraform apply -var-file=terraform.tfvars -auto-approve
 
-# destroy everything
-terraform destroy
-
-# show resources and components from current state
+# List managed resources in active state
 terraform state list
+
+# Destroy all managed resources
+terraform destroy -var-file=terraform.tfvars
 ```
 
-Notes: 
-- For verbose output, set `export TF_LOG=DEBUG` before running TF commands
-- When using s3 bucket as remote state, you need to set `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION` env vars in the session, before executing `terraform init` and `terraform plan` commands
+*CLI Notes:*
+* Set `export TF_LOG=DEBUG` for verbose logging output.
+* When using an S3 remote state locally, export `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_DEFAULT_REGION` in your terminal session before executing `terraform init`.
+
+## ⚖️ License & Usage
+This project is part of a DevSecOps portfolio for educational and security demonstration purposes.
