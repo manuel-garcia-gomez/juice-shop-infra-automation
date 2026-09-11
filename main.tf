@@ -225,7 +225,7 @@ module "ec2_gitlab_runner" {
 
   name = "gitlab-runner"
 
-  instance_type               = "t3.small"
+  instance_type               = "t3.large"
   availability_zone           = element(data.aws_availability_zones.available.names, 0)
   ami                         = data.aws_ami.ubuntu.id
   iam_instance_profile        = data.aws_iam_instance_profile.gitlab-runner-role.name
