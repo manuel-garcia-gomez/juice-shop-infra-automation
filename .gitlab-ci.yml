@@ -33,8 +33,13 @@ trivy:
     name: aquasec/trivy:latest
     entrypoint: [""]
   script:
+    - trivy config --format json . > trivy.json
     - trivy config --exit-code 1 --severity HIGH,CRITICAL .
   allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - trivy.json
 
 build:
   stage: build
