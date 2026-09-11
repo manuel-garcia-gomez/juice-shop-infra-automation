@@ -5,7 +5,7 @@ variable "aws_secret_access_key" {
   default = ""
 }
 variable "aws_region" {
-  default = "eu-west-3"
+  default = "eu-north-1"
 }
 variable "env_prefix" {
   default = "dev"

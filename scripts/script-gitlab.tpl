@@ -23,6 +23,8 @@ systemctl restart docker
 # Install AWS CLI 
 sudo apt install awscli -y
 
+# Install trivy
+curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.74.0
 
 ## register runner
 sudo gitlab-runner register --non-interactive --url "https://gitlab.com/" --token "${runner_registration_token}" --executor "shell"
