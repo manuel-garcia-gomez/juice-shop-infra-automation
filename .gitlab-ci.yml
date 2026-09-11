@@ -1,5 +1,6 @@
 stages:
   - init
+  - test
   - build
   - deploy
 
@@ -19,6 +20,21 @@ init:
     paths:
       - .terraform/
       - .terraform.lock.hcl
+
+validate:
+  stage: test
+  script:
+    - terraform validate
+  allow_failure: true
+
+trivy:
+  stage: test
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - trivy config --exit-code 1 --severity HIGH,CRITICAL .
+  allow_failure: true
 
 build:
   stage: build
